@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake!</title>
+</head>
+<body>
+    <div class="" id="score">0</div>
+
+    <canvas id="gameCanvas" width="300" height="300"></canvas>
+
+    <script>
+        // Canvas element
+        const gameCanvas = document.getElementById("gameCanvas");
+        // 2d drawing context
+        const context = gameCanvas.getContext("2d");
+
+        const gameSpeed = 100;
+        const canBorderColor = 'black';
+        const canBackgroundColor = 'white';
+        const snakeColor = 'lightgreen';
+        const snakeBorderColor = 'darkgreen';
+        const foodColor = 'red';
+        const foodBorderColor = 'darkred';
+
+        let gameOver = false;
+        let changingDirection = false;
+
+        // Snake object starting with 5 squares
+        let snake = [
+            {x: 150, y: 150},
+            {x: 140, y: 150},
+            {x: 130, y: 150},
+            {x: 120, y: 150},
+            {x: 110, y: 150}
+        ]
+
+        // Player's score
+        let score = 0;
+        // Food coordinates
+        let foodx, foody;
+        // horizontal speed
+        let dx = 10;
+        // vertical speed
+        let dy = 0;
+        
+        // start game
+        main();
+
+        document.addEventListener("keydown", changeDirection);
+
+        function main() {
+            if (gameOver) return;
+
+            // Calls these functions every 100 ms.
+            setTimeout(function onTick() {
+                changingDirection = false;
+                clearCanvas();
+                createFood();
+                advanceSnake();
+                drawSnake();
+
+                // Call game again
+                main();
+            }, gameSpeed)
+
+        }
+
+        function clearCanvas() {
+            context.fillStyle = canBackgroundColor;
+            context.strokeStyle = canBorderColor;
+            // Draw a "filled" rectangle
+            context.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            // Draw a "border" around the entire canvas
+            context.strokeRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+        }
+
+        function createFood() {
+            context.fillStyle = FOOD_COLOUR;
+            context.strokestyle = FOOD_BORDER_COLOUR;
+            context.fillRect(foodX, foodY, 10, 10);
+            context.strokeRect(foodX, foodY, 10, 10);
+        }
+
+        function advanceSnake() {
+            // Create the new head of the snake by adding its velocity to the current head
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            // Add new head to the beginning of the array
+            snake.unshift(head);
+
+            // Boolean to check if food and snake are in same position
+            const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
+            if (didEatFood) {
+                // Increase score
+                score++;
+                // Update score
+                document.getElementById('score').innerHTML = score;
+
+                // make a new food location
+                genFood();
+
+            } else {
+                snake.pop();
+            }
+
+        }
+
+        function drawSnake () {
+            snake.forEach(drawPart)
+
+        }
+
+        function drawPart(snakePart) {
+            context.fillStyle = snakeColor;
+            context.strokeStyle = snakeBorderColor;
+            // Snake rectangle
+            context.fillRect(snakePart.x, snakePart.y, 10, 10);
+            // Snake border
+            context.strokeRect(snakePart.x, snakePart.y, 10, 10);
+
+        }
+
+        function genFood() {
+            foodx = randomTen(0, gameCanvas.width - 10);
+            foody = randomTen(0, gameCanvas.height - 10);
+
+            // check if food is in an empty space
+            // if not, generate food again
+            snake.forEach(function isOnSnake(part) {
+                const foodIsOnSnake = part.x == foodX && part.y == foodY;
+                if (foodIsOnSnake) genFood;
+            });
+
+        }
+
+        // Function used to randomly generate coordinates for genFood
+        // Each block is 10 pixels so we find a 10s value
+        function randomTen(min, max) {
+            return Math.round((Math.random() * (max-min) + min) / 10) * 10;
+        }
+
+        function changeDirection(event) {
+            // Check if function is being ran
+            if(changingDirection) return;
+            changingDirection = true;
+
+            if(event.code == 'ArrowUp' && dy != -10) {
+                dx = 0;
+                dy = 10;
+            }
+            if(event.code == 'ArrowDown' && dy != 10) {
+                dx = 0;
+                dy = -10;
+            }
+            if(event.code == 'ArrowLeft' && dx != 10) {
+                dx = -10;
+                dy = 0;
+            }
+            if(event.code == 'ArrowRight' && dx != -10){
+                dx = 10;
+                dy = 0;
+            }
+        }
+        
+    </script>
+</body>
+</html>
